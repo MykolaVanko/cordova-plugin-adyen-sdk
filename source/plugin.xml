@@ -63,7 +63,7 @@
         <source url="https://github.com/CocoaPods/Specs.git"/>
       </config>
       <pods use-frameworks="true">
-        <pod name="Adyen" spec="~> 3.8.5"/>
+        <pod name="Adyen" spec="~> 4.6.0"/>
       </pods>
     </podspec>
   </platform>

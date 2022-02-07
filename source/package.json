@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/foodji/cordova-plugin-adyen-sdk.git"
+    "url": "git+https://github.com/MykolaVanko/cordova-plugin-adyen-sdk.git"
   },
   "keywords": [
     "ecosystem:cordova",
@@ -22,7 +22,7 @@
   "author": "foodji marketplace GmbH",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/foodji/cordova-plugin-adyen-sdk/issues"
+    "url": "https://github.com/MykolaVanko/cordova-plugin-adyen-sdk.git/issues"
   },
-  "homepage": "https://github.com/foodji/cordova-plugin-adyen-sdk#readme"
+  "homepage": "https://github.com/MykolaVanko/cordova-plugin-adyen-sdk.git#readme"
 }
