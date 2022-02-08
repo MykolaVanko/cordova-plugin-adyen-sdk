@@ -25,7 +25,13 @@ Adyen.prototype.presentDropIn = function (options, onSuccess, onFail) {
       } else {
         onFail(">>> Clientside configuration error: please implement onAdditionalDetails <<<");
       }
-    } else {
+    } else if (res && res.action === "onLastPaymentDetails") {
+      if (typeof opts.onLastPaymentDetails === "function") {
+        opts.onLastPaymentDetails(res);
+      } else {
+        onFail(">>> Clientside configuration error: please implement onAdditionalDetails <<<");
+      }
+    }else {
       onSuccess(res);
     }
   }
@@ -46,6 +52,11 @@ Adyen.prototype.handleAction = function (options) {
 
 Adyen.prototype.dismissDropIn = function () {
   exec(null, null, "AdyenPlugin", "dismissDropIn", []);
+}
+
+
+Adyen.prototype.getLastPaymentResponse = function () {
+  exec(null, null, "AdyenPlugin", "getLastPaymentResponse", []);
 }
 
 

@@ -66,6 +66,23 @@
        self.dropInComponent.handle(action)
    }
 
+  @objc(getLastPaymentResponse:)
+   func getLastPaymentResponse(command: CDVInvokedUrlCommand) {
+        let jsonEncoder = JSONEncoder()
+        let jsonData = try? jsonEncoder.encode(self.lastPaymentResponse.paymentMethod.encodable)
+        let json = String(data: jsonData!, encoding: String.Encoding.utf8)
+        let result: [String: Any] = [
+          "action": "onLastPaymentDetails",
+          "data":[
+             "paymentMethod": json as Any,
+             "browserInfo": ["userAgent": self.lastPaymentResponse.browserInfo?.userAgent]
+          ]
+        ]
+        let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: result)
+        pluginResult!.keepCallback = NSNumber(true)
+        self.commandDelegate.send(pluginResult, callbackId:self.command.callbackId)
+   }
+
  @objc(dismissDropIn:)
    func dismissDropIn(command: CDVInvokedUrlCommand) {
      self.viewController.dismiss(animated: true)
