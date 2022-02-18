@@ -1,12 +1,16 @@
 package com.adyensdk.plugin;
 
-import com.adyen.checkout.dropin.service.CallResult;
+import com.adyen.checkout.components.ActionComponentData;
+import com.adyen.checkout.components.PaymentComponentState;
 import com.adyen.checkout.dropin.service.DropInService;
+import com.adyen.checkout.dropin.service.DropInServiceResult;
+import com.getcapacitor.JSObject;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
 import org.json.JSONObject;
 import org.json.JSONException;
+
 
 /**
  * The methods here expect native apps to invoke your remote backend (which in turn should invoke Adyen),
@@ -28,51 +32,43 @@ public class AdyenPluginDropInService extends DropInService {
   }
 
   @Override
-  public CallResult makeDetailsCall(JSONObject jsonObject) {
+  public void onDetailsCallRequested(ActionComponentData actionComponentData, JSONObject actionComponentJson) {
     // this is called after the "action" (for additional details) completes
 
-    try {
-      JSONObject actionComponentData = jsonObject;
+    JSObject result = new JSObject();
+    result.put("action", "onAdditionalDetails");
+    result.put("data", actionComponentJson);
 
-      JSONObject result = new JSONObject();
-      result.put("action", "onAdditionalDetails");
-      result.put("data", actionComponentData);
-      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
-      pluginResult.setKeepCallback(true);
-      callbackContext.sendPluginResult(pluginResult);
+    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
 
-    } catch (JSONException e) {
-      callbackContext.error("Error in AdyenPluginDropInService.makeDetailsCall: " + e.getMessage());
-    }
-
-    return new CallResult(CallResult.ResultType.WAIT, "Handled in JS, will complete async");
   }
 
   @Override
-  public CallResult makePaymentsCall(JSONObject jsonObject) {
+  public void onPaymentsCallRequested(PaymentComponentState paymentComponentState, JSONObject paymentComponentJson) {
     // this is called after the user picked one of the payment methods from the list
     try {
-      lastPaymentResponse = jsonObject;
+      lastPaymentResponse = paymentComponentJson;
+      JSObject result = new JSObject();
+      JSObject data = new JSObject();
 
-      JSONObject result = new JSONObject();
+      data.put("paymentMethod", paymentComponentJson.getString("paymentMethod"));
+
       result.put("action", "onSubmit");
-      result.put("data", lastPaymentResponse);
-      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
-      pluginResult.setKeepCallback(true);
-      callbackContext.sendPluginResult(pluginResult);
+      result.put("data", data);
+
+      callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
 
     } catch (JSONException e) {
-      callbackContext.error("Error in AdyenPluginDropInService.makePaymentsCall: " + e.getMessage());
+      callbackContext.error("Error in AdyenPluginDropInService.onPaymentsCallRequested: " + e.getMessage());
     }
-
-    return new CallResult(CallResult.ResultType.WAIT, "Handled in JS, will complete async");
   }
 
   void callResultFinished() {
     // Note that the content here is send as the RESULT_KEY in the intent, so we could use that in AdyenPlugin.java,
     // however, that would require AndroidManifest.xml need this to be added o the activity: android:launchMode="singleInstance"
     // because otherwise onNewIntent in AdyenPlugin.java won't fire. So doing it here is more robust.
-    asyncCallback(new CallResult(CallResult.ResultType.FINISHED, lastPaymentResponse.toString()));
+    sendResult(new DropInServiceResult.Finished(lastPaymentResponse.toString()));
+
     if (lastPaymentResponse == null) {
       callbackContext.success();
     } else {
@@ -88,6 +84,6 @@ public class AdyenPluginDropInService extends DropInService {
   }
 
   void callResultAction(String action) {
-    asyncCallback(new CallResult(CallResult.ResultType.ACTION, action));
+    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, action));
   }
 }

@@ -2,8 +2,9 @@ package com.adyensdk.plugin;
 
 import android.content.Intent;
 
-import com.adyen.checkout.base.model.PaymentMethodsApiResponse;
-import com.adyen.checkout.base.model.payments.Amount;
+import com.adyen.checkout.card.data.CardType;
+import com.adyen.checkout.components.model.PaymentMethodsApiResponse;
+import com.adyen.checkout.components.model.payments.Amount;
 import com.adyen.checkout.card.CardConfiguration;
 import com.adyen.checkout.core.api.Environment;
 import com.adyen.checkout.dropin.DropIn;
@@ -54,30 +55,27 @@ public class AdyenPlugin extends CordovaPlugin {
         String currencyCode = options.getString("currencyCode");
         String paymentMethodsResponse = options.getString("paymentMethodsResponse");
         JSONObject paymentMethodsConfiguration = options.getJSONObject("paymentMethodsConfiguration");
+        String clientKey = options.getString("clientKey");
 
         PaymentMethodsApiResponse paymentMethodsApiResponse = PaymentMethodsApiResponse.SERIALIZER.deserialize(new JSONObject(paymentMethodsResponse));
 
         Intent intent = new Intent(cordova.getContext(), cordova.getActivity().getClass());
         intent.setAction(INTENT_ACTION_PRESENTDROPIN);
 
-        DropInConfiguration.Builder dropInConfigurationBuilder = new DropInConfiguration.Builder(cordova.getContext(), intent, AdyenPluginDropInService.class);
-        dropInConfigurationBuilder.addSepaConfiguration(new SepaConfiguration.Builder(cordova.getContext()).build());
+        Environment env = "live".equals(environment) ? Environment.LIVE : Environment.TEST;
+
+        DropInConfiguration.Builder dropInConfigurationBuilder = new DropInConfiguration.Builder(cordova.getContext(), AdyenPluginDropInService.class, clientKey).setEnvironment(env);
+        dropInConfigurationBuilder.addSepaConfiguration(new SepaConfiguration.Builder(cordova.getContext(), clientKey).setEnvironment(env).build());
+
 
         if (paymentMethodsConfiguration.has("card")) {
           JSONObject card = paymentMethodsConfiguration.getJSONObject("card");
-          CardConfiguration cardConfiguration = new CardConfiguration.Builder(cordova.getContext(), card.getString("publicKey"))
-              .setHolderNameRequire(card.getBoolean("holderNameRequired"))
-              .setShowStorePaymentField(card.getBoolean("showStorePaymentField"))
-              .build();
+          CardConfiguration cardConfiguration = new CardConfiguration.Builder(cordova.getContext(), clientKey)
+                  .setHolderNameRequired(card.getBoolean("holderNameRequired"))
+                  .setShowStorePaymentField(card.has("showStorePaymentField") && card.getBoolean("showStorePaymentField"))
+                  .setSupportedCardTypes(CardType.VISA, CardType.MASTERCARD)
+                  .build();
           dropInConfigurationBuilder.addCardConfiguration(cardConfiguration);
-        }
-
-        if (paymentMethodsConfiguration.has("paywithgoogle")) {
-          JSONObject paywithgoogle = paymentMethodsConfiguration.getJSONObject("paywithgoogle");
-          GooglePayConfiguration googlePayConfiguration = new GooglePayConfiguration.Builder(cordova.getContext(), paywithgoogle.getJSONObject("configuration").getString("gatewayMerchantId"))
-              .setGooglePayEnvironment("live".equals(environment) ? WalletConstants.ENVIRONMENT_PRODUCTION : WalletConstants.ENVIRONMENT_TEST)
-              .build();
-          dropInConfigurationBuilder.addGooglePayConfiguration(googlePayConfiguration);
         }
 
         if(amount > 0) {
@@ -87,10 +85,10 @@ public class AdyenPlugin extends CordovaPlugin {
           dropInConfigurationBuilder.setAmount(dropInAmount);
         }
 
-        dropInConfigurationBuilder.setEnvironment("live".equals(environment) ? Environment.EUROPE : Environment.TEST);
+
         DropInConfiguration dropInConfiguration = dropInConfigurationBuilder.build();
 
-        DropIn.startPayment(cordova.getContext(), paymentMethodsApiResponse, dropInConfiguration);
+        DropIn.startPayment(cordova.getActivity(), paymentMethodsApiResponse, dropInConfiguration, null);
 
       } catch (JSONException e) {
         callbackContext.error(e.getMessage());
