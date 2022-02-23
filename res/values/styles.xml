@@ -8,10 +8,10 @@
 
 <resources>
     <!-- Placeholder to be overridden by main app -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.Bridge" />\
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.Bridge" />
 
     <!-- Base theme for Checkout -->
-    <style name="AdyenCheckout" parent="AppTheme" />
+    <style name="AdyenCheckout" parent="Theme.MaterialComponents.Light" />
 
     <!-- Text -->
     <style name="AdyenCheckout.TextAppearance" />
@@ -36,9 +36,10 @@
         <item name="android:textColor">@color/primaryColor</item>
     </style>
 
-    <style name="AdyenCheckout.TextInputLayout" >
+    <style name="AdyenCheckout.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <item name="boxStrokeColor">@color/primaryColor</item>
         <item name="hintTextAppearance">@style/AdyenCheckout.HintTextStyle</item>
+        <item name="hintTextColor">@color/primaryColor</item>
         <item name="android:minHeight">@dimen/input_layout_height</item>
     </style>
 

@@ -3,7 +3,6 @@ package com.adyensdk.plugin;
 import com.adyen.checkout.components.ActionComponentData;
 import com.adyen.checkout.components.PaymentComponentState;
 import com.adyen.checkout.dropin.service.DropInService;
-import com.adyen.checkout.dropin.service.DropInServiceResult;
 import com.getcapacitor.JSObject;
 
 import org.apache.cordova.CallbackContext;
@@ -29,6 +28,11 @@ public class AdyenPluginDropInService extends DropInService {
   public void onCreate() {
     super.onCreate();
     INSTANCE = this;
+  }
+
+  public void onDestroy() {
+    super.onDestroy();
+    this.callResultFinished();
   }
 
   @Override
@@ -67,10 +71,9 @@ public class AdyenPluginDropInService extends DropInService {
     // Note that the content here is send as the RESULT_KEY in the intent, so we could use that in AdyenPlugin.java,
     // however, that would require AndroidManifest.xml need this to be added o the activity: android:launchMode="singleInstance"
     // because otherwise onNewIntent in AdyenPlugin.java won't fire. So doing it here is more robust.
-    sendResult(new DropInServiceResult.Finished(lastPaymentResponse.toString()));
 
     if (lastPaymentResponse == null) {
-      callbackContext.success();
+      callbackContext.success("closed");
     } else {
       try {
         JSONObject result = new JSONObject();
